@@ -7,6 +7,47 @@ from kaggle_environments.helpers import *
 from random import randint
 import math
 
+#
+#   Brief           Contains intercept_calculator function output.
+#
+class intercept_outcome:
+    collision = False       # false for no combat is going to happen. true for combat.
+    outcome = 0             # Positive value means that own fleet wins, negative means losing combat
+    own_fleet               # own fleet object
+    enemy_fleet             # enemy fleet object
+
+#
+#   Brief           Checks if own and enemy fleets collide in combat. Calculates outcome for this combat.
+#
+#   own_fleet       Own fleet (fleet object) used in calculation
+#   enemy_fleet     Enemy fleet (fleet object) used in calculation
+#   return          intercept_outcome object
+#
+def intercept_calculator(own_fleet, enemy_fleet):
+    outcome = intercept_outcome()
+    # TODO: parse paths and check if they collide and calculate outcome
+    return outcome
+
+#
+#   Brief           Loops through all enemy fleets, checks if they will collide with out fleets in winning output.
+#                   Then finds new enemy fleets that we could intercept
+#
+#
+def intercept_scanner(board):
+    opponent_fleets = board.opponents[0].fleets.values()
+    player_fleets = board.current_player.fleets.values()
+    itc_opportunities = []
+
+    for o_fleet in opponent_fleets:
+        for p_fleet in player_fleets:
+            itc = intercept_calculator(p_fleet,o_fleet)
+            if itc.collision:
+                #Collision detected
+                itc_opportunities.append(itc)
+                if itc.outcome <= 0:
+                    #Draw or losing combat detected
+                    # TODO: do something about losing collisions
+    return itc_opportunities
 
 def agent(obs, config):
     board = Board(obs, config)
