@@ -1,3 +1,5 @@
+#%%writefile starter.py
+
 from kaggle_environments.envs.kore_fleets.helpers import *
 from kaggle_environments.envs.kore_fleets.kore_fleets import get_shortest_flight_path_between
 from kaggle_environments.envs.kore_fleets.kore_fleets import get_closest_enemy_shipyard
@@ -292,23 +294,32 @@ def agent(obs, config):
                     n_send = shipyards_under_attack[point][1] - shipyards_under_attack[point][0].ship_count
 
                     # Shipyard dont need help
-                    if n_send <= 0:
+                    if n_send <= 1:
                         return
                     path = get_shortest_flight_path_between(shipyard._position, point, board.configuration.size,
                                                             trailing_digits=False)
 
-                    while n_send <= shipyard.ship_count:
+                    while n_send < shipyard.ship_count:
                         if len(path) < math.floor(2 * math.log(n_send)) + 1:
                             n_send += 1
                         else:
                             break
 
                     # Send help and return
+                    # Pystyykö lähettään tämän kokoisen saattueen
                     if len(path) <= math.floor(2 * math.log(n_send)) + 1:
-                        print(f'{turn} help: route:{path} size: {n_send}')
-                        action = ShipyardAction.launch_fleet_with_flight_plan(n_send, path)
-                        shipyard.next_action = action
-                        return True
+                        if n_send <= shipyard.ship_count:
+                            print(f'{turn} help: route:{path} size: {n_send}')
+                            action = ShipyardAction.launch_fleet_with_flight_plan(n_send, path)
+                            shipyard.next_action = action
+                            return True
+                        else:
+                            if shipyard.ship_count > 1:
+                                if len(path) <= math.floor(2 * math.log(shipyard.ship_count)) + 1:
+                                    print(f'{turn} help2: route:{path} size: {n_send}')
+                                    action = ShipyardAction.launch_fleet_with_flight_plan(shipyard.ship_count, path)
+                                    shipyard.next_action = action
+                                    return True
         # Did not find anyone to help
         return False
 
