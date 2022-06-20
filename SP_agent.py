@@ -7,8 +7,11 @@ from kaggle_environments.helpers import *
 from random import randint
 import math
 
+#####################################################################################
+##      INTERCEPTOR FUNCTIONS AND CLASSES START
+#####################################################################################
 #
-#   Brief           Contains intercept_calculator function output.
+#   Brief           Contains intercept_calculator function output object.
 #
 class intercept_outcome:
     collision = False       # false for no combat is going to happen. true for combat.
@@ -31,7 +34,9 @@ def intercept_calculator(own_fleet, enemy_fleet):
 #
 #   Brief           Loops through all enemy fleets, checks if they will collide with out fleets in winning output.
 #                   Then finds new enemy fleets that we could intercept
-#
+#   
+#   board           Kore board -object
+#   return          List of enemy fleets that are not intercepted
 #
 def intercept_scanner(board):
     opponent_fleets = board.opponents[0].fleets.values()
@@ -39,15 +44,23 @@ def intercept_scanner(board):
     itc_opportunities = []
 
     for o_fleet in opponent_fleets:
+        intercept_detected = False
         for p_fleet in player_fleets:
             itc = intercept_calculator(p_fleet,o_fleet)
             if itc.collision:
-                #Collision detected
-                itc_opportunities.append(itc)
+                # Collision detected
+                intercept_detected = True
                 if itc.outcome <= 0:
-                    #Draw or losing combat detected
+                    # Draw or losing combat detected
                     # TODO: do something about losing collisions
+        if !intercept_detected:
+            #New intercept opportunity detected. Push to list
+            itc_opportunities.append(o_fleet)
+
     return itc_opportunities
+#####################################################################################
+##      INTERCEPTOR FUNCTIONS AND CLASSES END
+#####################################################################################
 
 def agent(obs, config):
     board = Board(obs, config)
