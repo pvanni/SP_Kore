@@ -143,9 +143,6 @@ def detect_collision(fplan_coord1, fplan_coord2):
 		i+=1
 	return False
 
-        
-
-
 #
 #   Brief           Checks if own and enemy fleets collide in combat. Calculates outcome for this combat.
 #
