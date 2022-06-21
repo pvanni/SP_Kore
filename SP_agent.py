@@ -157,8 +157,8 @@ def intercept_calculator(own_fleet, enemy_fleet):
     return result
 
 #
-#   Brief               Loops through all enemy fleets, checks if they will collide with out fleets in winning output.
-#                       Then finds new enemy fleets that we could intercept
+#   Brief               Loops through all enemy fleets, checks if they will collide with own fleets in winning output.
+#                       Then finds new enemy fleets that we could intercept that doesnt collide existing own fleets
 #   
 #   opponent_fleets     Opponent fleet object list
 #   player_fleets       Own fleet object list
