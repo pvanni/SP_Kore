@@ -6,6 +6,7 @@ from kaggle_environments.envs.kore_fleets.kore_fleets import get_closest_enemy_s
 from kaggle_environments.helpers import *
 from random import randint
 import math
+import copy
 
 #####################################################################################
 ##      INTERCEPTOR FUNCTIONS AND CLASSES START
@@ -20,6 +21,132 @@ class intercept_outcome:
     enemy_fleet             # enemy fleet object
 
 #
+#   Brief           Checks if position is out of bounds and wraps it around the kore map
+#
+#   position        position (position object)
+#   return          -
+#
+def wrap_coordinates(position):
+	if position.x > 20:
+		position.x = 0
+	if position.y > 20:
+		position.y = 0
+	if position.x < 0:
+		position.x = 20
+	if position.y < 0:
+		position.y = 20
+
+#
+#   Brief           Converts flight_plan object to cartesian coordinate list
+#
+#   flight_plan     flight_plan string
+#   position        fleet position (position object)
+#   direction       fleet direction, char
+#   return          Coordinate list
+#
+def fplan_to_coordinates(flight_plan, position, direction):
+	cartesian_path = []
+	fplan = flight_plan
+	direct= direction
+	pos = position
+	idx = 0
+	while idx < len(fplan):
+		if fplan[idx].isdigit():
+			if fplan[idx:idx+2].isdigit():
+				steps = int(fplan[idx:idx+2])
+				idx+=2
+			else:
+				steps = int(fplan[idx])
+				idx+=1
+
+			j = 0
+			while j < steps:
+				if direct == 'N':
+					pos.y += 1
+				elif direct == 'E':
+					pos.x += 1
+				elif direct == 'S':
+					pos.y += -1
+				elif direct == 'W':
+					pos.x += -1
+				wrap_coordinates(pos)
+				cartesian_path.append(copy.copy(pos))
+				j+=1
+		else:
+			direct = fplan[idx]
+			if direct == 'N':
+				pos.y += 1
+			elif direct == 'E':
+				pos.x += 1
+			elif direct == 'S':
+				pos.y += -1
+			elif direct == 'W':
+				pos.x += -1
+			wrap_coordinates(pos)
+			cartesian_path.append(copy.copy(pos))
+			idx+=1
+	
+	return cartesian_path
+
+#
+#   Brief           Checks if two points in board are adjacent
+#
+#   p1              position object 1, compared to 2
+#   p2              position object 2, compared to 1
+#   return          True if adjacent
+#
+def are_points_adjacent(p1, p2):
+	tp = p1
+	if tp.x == p2.x and tp.y == p2.y:
+		return True
+	tp = p1
+	tp.x += 1
+	wrap_coordinates(tp)
+	if tp.x == p2.x and tp.y == p2.y:
+		return True
+	tp = p1
+	tp.x += -1
+	wrap_coordinates(tp)
+	if tp.x == p2.x and tp.y == p2.y:
+		return True
+	tp = p1
+	tp.y += 1
+	wrap_coordinates(tp)
+	if tp.x == p2.x and tp.y == p2.y:
+		return True
+	tp = p1
+	tp.y += -1
+	wrap_coordinates(tp)
+	if tp.x == p2.x and tp.y == p2.y:
+		return True
+	return False
+
+#
+#   Brief           Detects collision of two Cartesian coordinate fligth paths
+#
+#   fplan_coord1    flight_plan cartesian coordinates list 1, compared to 2
+#   fplan_coord2    flight_plan cartesian coordinates list 2, compared to 1
+#   return          True if collision detected
+#
+def detect_collision(fplan_coord1, fplan_coord2):
+	fc1_len = len(fplan_coord1)
+	fc2_len = len(fplan_coord2)
+
+	if fc1_len <= fc2_len:
+		loop_count = fc1_len
+	else:
+		loop_count = fc2_len
+	i=0
+	while i < loop_count:
+		if are_points_adjacent(fplan_coord1[i],fplan_coord2[i]):
+			return True
+		i+=1
+	return False
+
+        
+
+
+#
 #   Brief           Checks if own and enemy fleets collide in combat. Calculates outcome for this combat.
 #
 #   own_fleet       Own fleet (fleet object) used in calculation
@@ -27,9 +154,12 @@ class intercept_outcome:
 #   return          intercept_outcome object
 #
 def intercept_calculator(own_fleet, enemy_fleet):
-    outcome = intercept_outcome()
-    # TODO: parse paths and check if they collide and calculate outcome
-    return outcome
+    result = intercept_outcome()
+    o_fplan_coord = fplan_to_coordinates(own_fleet.flight_plan, own_fleet.position, own_fleet.direction.to_char())
+    e_fplan_coord = fplan_to_coordinates(enemy_fleet.flight_plan, enemy_fleet.position, enemy_fleet.direction.to_char())
+    result.collision = detect_collision(o_fplan_coord,e_fplan_coord)
+    result.outcome = own_fleet.ship_count - enemy_fleet.ship_count
+    return result
 
 #
 #   Brief           Loops through all enemy fleets, checks if they will collide with out fleets in winning output.
@@ -48,13 +178,10 @@ def intercept_scanner(board):
         for p_fleet in player_fleets:
             itc = intercept_calculator(p_fleet,o_fleet)
             if itc.collision:
-                # Collision detected
                 intercept_detected = True
-                if itc.outcome <= 0:
-                    # Draw or losing combat detected
-                    # TODO: do something about losing collisions
-        if !intercept_detected:
-            #New intercept opportunity detected. Push to list
+                break
+        if intercept_detected == False:
+            # New intercept opportunity detected. Push to list
             itc_opportunities.append(o_fleet)
 
     return itc_opportunities
