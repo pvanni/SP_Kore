@@ -162,17 +162,15 @@ def intercept_calculator(own_fleet, enemy_fleet):
     return result
 
 #
-#   Brief           Loops through all enemy fleets, checks if they will collide with out fleets in winning output.
-#                   Then finds new enemy fleets that we could intercept
+#   Brief               Loops through all enemy fleets, checks if they will collide with out fleets in winning output.
+#                       Then finds new enemy fleets that we could intercept
 #   
-#   board           Kore board -object
-#   return          List of enemy fleets that are not intercepted
+#   opponent_fleets     Opponent fleet object list
+#   player_fleets       Own fleet object list
+#   return              List of enemy fleets that are not intercepted
 #
-def intercept_scanner(board):
-    opponent_fleets = board.opponents[0].fleets.values()
-    player_fleets = board.current_player.fleets.values()
+def intercept_scanner(opponent_fleets, player_fleets):
     itc_opportunities = []
-
     for o_fleet in opponent_fleets:
         intercept_detected = False
         for p_fleet in player_fleets:
