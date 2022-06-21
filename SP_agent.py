@@ -17,8 +17,6 @@ import copy
 class intercept_outcome:
     collision = False       # false for no combat is going to happen. true for combat.
     outcome = 0             # Positive value means that own fleet wins, negative means losing combat
-    own_fleet               # own fleet object
-    enemy_fleet             # enemy fleet object
 
 #
 #   Brief           Checks if position is out of bounds and wraps it around the kore map
